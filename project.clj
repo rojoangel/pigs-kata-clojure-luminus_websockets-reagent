@@ -25,7 +25,9 @@
                  [ring-webjars "0.2.0"]
                  [ring/ring-core "1.6.3"]
                  [ring/ring-defaults "0.3.1"]
-                 [selmer "1.11.3"]]
+                 [selmer "1.11.3"]
+                 [reagent "0.8.0-alpha2"]
+                 [com.cognitect/transit-cljs "0.8.243"]]
 
   :min-lein-version "2.0.0"
 
