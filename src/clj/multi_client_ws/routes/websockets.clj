@@ -36,7 +36,8 @@
 (defn dispatch-message! [channel msg]
   (let [message (:message (decode msg))]
     (case (:type message)
-      :join (notify-clients! channel {:message (str (:name message) " joined the game")}))))
+      :join (notify-clients! channel {:message (str (:name message) " joined the game")})
+      (log/error "received unknown message" message))))
 
 (def websocket-callbacks
   "WebSocket callback functions"

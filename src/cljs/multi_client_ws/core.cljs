@@ -3,7 +3,7 @@
             [multi-client-ws.websockets :as ws]))
 
 (defonce messages (atom []))
-(defonce joined (atom false))
+(defonce player (atom nil))
 
 (defn message-list []
   [:ul
@@ -26,8 +26,8 @@
             :on-key-down #(when (= (.-keyCode %) 13)
                             (ws/send-transit-msg!
                               {:message {:type :join :name @value}})
-                            (reset! value nil)
-                            (swap! joined not))}]])
+                            (reset! player @value)
+                            (reset! value nil))}]])
 
 (defn player-name-element
   [player-name-atom]
@@ -43,14 +43,33 @@
     [:div.container
      [:div.row
       [:div.col-md-12
-       [:h2 "Let's play Pigs"]]]
+       [:h3 (str "Let's play Pigs " @player)]]]
      [:div.row
       [:div.col-sm-6
        [message-list]]]
-     (if (not @joined)
+     (if (not @player)
        [:div.row
         [:div.col-sm-6
-         [player-name-element player-name]]])]))
+         [player-name-element player-name]]]
+       [:div.container
+        [:div.row
+         [:div.col-sm-6
+          [:div
+           [:input {:id       "roll"
+                    :name     "roll"
+                    :class    "form-control"
+                    :type     "submit"
+                    :value    "roll"
+                    :on-click #(ws/send-transit-msg!
+                                 {:message {:type :roll}})}]
+           [:input {:id    "hold"
+                    :name  "hold"
+                    :class "form-control"
+                    :type  "submit"
+                    :value "hold"
+                    :on-click #(ws/send-transit-msg!
+                                 {:message {:type :hold}})}]
+           ]]]])]))
 
 (defn update-messages! [{:keys [message]}]
   (println "Received message:" message)
