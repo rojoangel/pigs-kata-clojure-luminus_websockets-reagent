@@ -73,7 +73,7 @@
 
 (defn update-messages! [{:keys [message]}]
   (println "Received message:" message)
-  (swap! messages #(vec (take 10 (conj % message)))))
+  (swap! messages #(vec (take-last 10 (conj % message)))))
 
 (defn mount-components []
   (reagent/render-component [#'home-page] (.getElementById js/document "app")))
