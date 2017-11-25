@@ -28,7 +28,7 @@
   [:div.container
    [:div.row
     [:div.col-md-12
-     [:h2 "Welcome to chat"]]]
+     [:h2 "Let's play Pigs"]]]
    [:div.row
     [:div.col-sm-6
      [message-list]]]
