@@ -49,6 +49,11 @@
         (swap! game #(pigs/roll % rolled-value))
         (notify-clients! channel {:message (str (:player message) "'s current rolls are " (:current-player-rolls @game))}))
 
+      :hold
+      (do
+        (notify-clients! channel {:message (str (:player message) " held " (apply + (:current-player-rolls @game)) " points")})
+        (swap! game pigs/hold))
+
       ;default
       (log/error "received unknown message" message))))
 
