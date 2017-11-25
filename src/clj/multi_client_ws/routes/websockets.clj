@@ -44,12 +44,10 @@
         (notify-clients! channel {:message (str (:player message) " joined the game")}))
 
       :roll
-      (do
-        (notify-clients! channel {:message (str (:player message) " is rolling")})
-        (let [rolled-value (inc (rand-int 6))]
-          (notify-clients! channel {:message (str (:player message) " rolled a " rolled-value)})
-          (swap! game #(pigs/roll % rolled-value))
-          (notify-clients! channel {:message (str (:player message) "'s current rolls are " (:current-player-rolls @game))})))
+      (let [rolled-value (inc (rand-int 6))]
+        (notify-clients! channel {:message (str (:player message) " rolled a " rolled-value)})
+        (swap! game #(pigs/roll % rolled-value))
+        (notify-clients! channel {:message (str (:player message) "'s current rolls are " (:current-player-rolls @game))}))
 
       ;default
       (log/error "received unknown message" message))))
