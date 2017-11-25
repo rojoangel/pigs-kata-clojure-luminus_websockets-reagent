@@ -5,6 +5,7 @@
 (defonce messages (atom []))
 (defonce player (atom nil))
 (defonce my-turn? (atom false))
+(defonce scores (atom nil))
 
 (defn message-list []
   [:ul
@@ -46,6 +47,12 @@
       [:div.col-md-12
        [:h3 (str "Let's play Pigs " @player)]]]
      [:div.row
+      [:div.col-md-12
+       [:h4 "Scores"]]
+      [:div.container
+       (for [[player score] @scores]
+         [:div.col-sm-6 (str player ":" score)])]]
+     [:div.row
       [:div.col-sm-6
        [message-list]]]
      (if (not @player)
@@ -80,9 +87,13 @@
 (defn update-turn! [value]
   (reset! my-turn? value))
 
+(defn update-scores! [new-scores]
+  (reset! scores new-scores))
+
 (defn dispatch-message! [message]
   (cond
     (:message message) (update-messages! (:message message))
+    (:scores message) (update-scores! (:scores message))
     (= :hold message) (update-turn! false)
     (= :your-turn message) (update-turn! true)))
 

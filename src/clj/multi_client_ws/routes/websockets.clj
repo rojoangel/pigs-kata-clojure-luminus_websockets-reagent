@@ -7,6 +7,7 @@
 
 (defonce channels (atom #{}))
 (defonce players->channels (atom {}))
+(defonce player-names (atom []))
 (defonce game (atom (pigs/new-game)))
 
 (defn connect! [channel]
@@ -49,8 +50,11 @@
       (do
         (swap! game pigs/add-player)
         (swap! players->channels #(assoc % (count (:scores @game)) channel))
+        (swap! player-names #(conj % (:player message)))
         (notify-clients! channel {:message (str (:player message) " joined the game")})
-        (notify-client! (:player-turn @game) :your-turn))
+        (notify-clients! channel :hold)
+        (notify-client! (:player-turn @game) :your-turn)
+        (notify-clients! channel {:scores (map vector @player-names (:scores @game))}))
 
       :roll
       (let [rolled-value (inc (rand-int 6))]
@@ -58,14 +62,16 @@
         (swap! game #(pigs/roll % rolled-value))
         (notify-clients! channel {:message (str (:player message) "'s current rolls are " (:current-player-rolls @game))})
         (notify-clients! channel :hold)
-        (notify-client! (:player-turn @game) :your-turn))
+        (notify-client! (:player-turn @game) :your-turn)
+        (notify-clients! channel {:scores (map vector @player-names (:scores @game))}))
 
       :hold
       (do
         (notify-clients! channel {:message (str (:player message) " held " (apply + (:current-player-rolls @game)) " points")})
         (notify-clients! channel :hold)
         (swap! game pigs/hold)
-        (notify-client! (:player-turn @game) :your-turn))
+        (notify-client! (:player-turn @game) :your-turn)
+        (notify-clients! channel {:scores (map vector @player-names (:scores @game))}))
 
       ;default
       (log/error "received unknown message" message))))
