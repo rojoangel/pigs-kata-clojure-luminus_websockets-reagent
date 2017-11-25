@@ -2,9 +2,11 @@
   (:require [compojure.core :refer [GET defroutes wrap-routes]]
             [clojure.tools.logging :as log]
             [immutant.web.async :as async]
-            [cognitect.transit :as transit]))
+            [cognitect.transit :as transit]
+            [pigs.core :as pigs]))
 
 (defonce channels (atom #{}))
+(defonce game (atom (pigs/new-game)))
 
 (defn connect! [channel]
   (log/info "channel open")
@@ -36,7 +38,20 @@
 (defn dispatch-message! [channel msg]
   (let [message (:message (decode msg))]
     (case (:type message)
-      :join (notify-clients! channel {:message (str (:name message) " joined the game")})
+      :join
+      (do
+        (swap! game pigs/add-player)
+        (notify-clients! channel {:message (str (:player message) " joined the game")}))
+
+      :roll
+      (do
+        (notify-clients! channel {:message (str (:player message) " is rolling")})
+        (let [rolled-value (inc (rand-int 6))]
+          (notify-clients! channel {:message (str (:player message) " rolled a " rolled-value)})
+          (swap! game #(pigs/roll % rolled-value))
+          (notify-clients! channel {:message (str (:player message) "'s current rolls are " (:current-player-rolls @game))})))
+
+      ;default
       (log/error "received unknown message" message))))
 
 (def websocket-callbacks

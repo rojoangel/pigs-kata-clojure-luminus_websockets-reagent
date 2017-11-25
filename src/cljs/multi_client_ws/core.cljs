@@ -25,7 +25,7 @@
             :on-change   #(reset! value (-> % .-target .-value))
             :on-key-down #(when (= (.-keyCode %) 13)
                             (ws/send-transit-msg!
-                              {:message {:type :join :name @value}})
+                              {:message {:type :join :player @value}})
                             (reset! player @value)
                             (reset! value nil))}]])
 
@@ -61,14 +61,14 @@
                     :type     "submit"
                     :value    "roll"
                     :on-click #(ws/send-transit-msg!
-                                 {:message {:type :roll}})}]
+                                 {:message {:type :roll :player @player}})}]
            [:input {:id    "hold"
                     :name  "hold"
                     :class "form-control"
                     :type  "submit"
                     :value "hold"
                     :on-click #(ws/send-transit-msg!
-                                 {:message {:type :hold}})}]
+                                 {:message {:type :hold :player @player}})}]
            ]]]])]))
 
 (defn update-messages! [{:keys [message]}]
