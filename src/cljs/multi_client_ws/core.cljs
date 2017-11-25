@@ -3,6 +3,7 @@
             [multi-client-ws.websockets :as ws]))
 
 (defonce messages (atom []))
+(defonce joined (atom false))
 
 (defn message-list []
   [:ul
@@ -24,8 +25,9 @@
             :on-change   #(reset! value (-> % .-target .-value))
             :on-key-down #(when (= (.-keyCode %) 13)
                             (ws/send-transit-msg!
-                              {:message {:type :join :name @value} })
-                            (reset! value nil))}]])
+                              {:message {:type :join :name @value}})
+                            (reset! value nil)
+                            (swap! joined not))}]])
 
 (defn player-name-element
   [player-name-atom]
@@ -45,9 +47,10 @@
      [:div.row
       [:div.col-sm-6
        [message-list]]]
-     [:div.row
-      [:div.col-sm-6
-       [player-name-element player-name]]]]))
+     (if (not @joined)
+       [:div.row
+        [:div.col-sm-6
+         [player-name-element player-name]]])]))
 
 (defn update-messages! [{:keys [message]}]
   (println "Received message:" message)
