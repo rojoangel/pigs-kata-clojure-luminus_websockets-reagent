@@ -4,6 +4,7 @@
 
 (defonce messages (atom []))
 (defonce player (atom nil))
+(defonce my-turn? (atom false))
 
 (defn message-list []
   [:ul
@@ -51,33 +52,43 @@
        [:div.row
         [:div.col-sm-6
          [player-name-element player-name]]]
-       [:div.container
-        [:div.row
-         [:div.col-sm-6
-          [:div
-           [:input {:id       "roll"
-                    :name     "roll"
-                    :class    "form-control"
-                    :type     "submit"
-                    :value    "roll"
-                    :on-click #(ws/send-transit-msg!
-                                 {:message {:type :roll :player @player}})}]
-           [:input {:id    "hold"
-                    :name  "hold"
-                    :class "form-control"
-                    :type  "submit"
-                    :value "hold"
-                    :on-click #(ws/send-transit-msg!
-                                 {:message {:type :hold :player @player}})}]
-           ]]]])]))
+       (when @my-turn?
+         [:div.container
+          [:div.row
+           [:div.col-sm-6
+            [:div
+             [:input {:id       "roll"
+                      :name     "roll"
+                      :class    "form-control"
+                      :type     "submit"
+                      :value    "roll"
+                      :on-click #(ws/send-transit-msg!
+                                   {:message {:type :roll :player @player}})}]
+             [:input {:id       "hold"
+                      :name     "hold"
+                      :class    "form-control"
+                      :type     "submit"
+                      :value    "hold"
+                      :on-click #(ws/send-transit-msg!
+                                   {:message {:type :hold :player @player}})}]
+             ]]]]))]))
 
-(defn update-messages! [{:keys [message]}]
+(defn update-messages! [message]
   (println "Received message:" message)
   (swap! messages #(vec (take-last 10 (conj % message)))))
+
+(defn update-turn! [value]
+  (reset! my-turn? value))
+
+(defn dispatch-message! [message]
+  (cond
+    (:message message) (update-messages! (:message message))
+    (= :hold message) (update-turn! false)
+    (= :your-turn message) (update-turn! true)))
 
 (defn mount-components []
   (reagent/render-component [#'home-page] (.getElementById js/document "app")))
 
 (defn init! []
-  (ws/make-websocket! (str "ws://" (.-host js/location) "/ws") update-messages!)
+  (ws/make-websocket! (str "ws://" (.-host js/location) "/ws") dispatch-message!)
   (mount-components))
