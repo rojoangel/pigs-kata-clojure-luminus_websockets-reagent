@@ -94,7 +94,7 @@
   (cond
     (:message message) (update-messages! (:message message))
     (:scores message) (update-scores! (:scores message))
-    (= :hold message) (update-turn! false)
+    (= :freeze message) (update-turn! false)
     (= :your-turn message) (update-turn! true)))
 
 (defn mount-components []
