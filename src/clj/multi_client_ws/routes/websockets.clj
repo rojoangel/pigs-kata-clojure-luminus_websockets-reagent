@@ -31,7 +31,7 @@
     (transit/write writer msg)
     (.toString out)))
 
-(defn notify-clients! [channel msg]
+(defn notify-clients! [msg]
   (let [message (encode msg)]
     (log/info "notify clients:" msg)
     (doseq [channel @channels]
@@ -51,29 +51,29 @@
         (swap! game pigs/add-player)
         (swap! players->channels #(assoc % (count (:scores @game)) channel))
         (swap! player-names #(conj % (:player message)))
-        (notify-clients! channel {:message (str (:player message) " joined the game")})
-        (notify-clients! channel :hold)
+        (notify-clients! {:message (str (:player message) " joined the game")})
+        (notify-clients! :hold)
         (notify-client! (:player-turn @game) :your-turn)
-        (notify-clients! channel {:scores (map vector @player-names (:scores @game))}))
+        (notify-clients! {:scores (map vector @player-names (:scores @game))}))
 
       :roll
       (let [rolled-value (inc (rand-int 6))]
         (swap! game #(pigs/roll % rolled-value))
-        (notify-clients! channel {:message (str (:player message) " rolled a " rolled-value)})
-        (notify-clients! channel {:message (str (:player message) "'s current rolls are " (:current-player-rolls @game))})
-        (notify-clients! channel {:scores (map vector @player-names (:scores @game))})
-        (notify-clients! channel :hold)
+        (notify-clients! {:message (str (:player message) " rolled a " rolled-value)})
+        (notify-clients! {:message (str (:player message) "'s current rolls are " (:current-player-rolls @game))})
+        (notify-clients! {:scores (map vector @player-names (:scores @game))})
+        (notify-clients! :hold)
         (notify-client! (:player-turn @game) :your-turn))
 
 
       :hold
       (do
-        (notify-clients! channel {:message (str (:player message) " held " (apply + (:current-player-rolls @game)) " points")})
-        (notify-clients! channel :hold)
+        (notify-clients! {:message (str (:player message) " held " (apply + (:current-player-rolls @game)) " points")})
+        (notify-clients! :hold)
         (swap! game pigs/hold)
-        (notify-clients! channel {:scores (map vector @player-names (:scores @game))})
+        (notify-clients! {:scores (map vector @player-names (:scores @game))})
         (if (pigs/end-game? @game)
-          (notify-clients! channel {:message (str (:player message) " wins this game!")})
+          (notify-clients! {:message (str (:player message) " wins this game!")})
           (notify-client! (:player-turn @game) :your-turn)))
 
       ;default
