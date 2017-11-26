@@ -49,7 +49,7 @@
       :join
       (do
         (swap! game pigs/add-player)
-        (swap! players->channels #(assoc % (count (pigs/scores @game)) channel))
+        (swap! players->channels #(assoc % (pigs/count-players @game) channel))
         (swap! player-names #(conj % (:player message)))
         (notify-clients! {:message (str (:player message) " joined the game")})
         (notify-clients! :hold)
