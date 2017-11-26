@@ -53,7 +53,7 @@
        (for [[player score] @scores]
          [:div.col-sm-6 (str player ":" score)])]]
      [:div.row
-      [:div.col-sm-6
+      [:div.col-sm-12
        [message-list]]]
      (if (not @player)
        [:div.row

@@ -58,20 +58,23 @@
 
       :roll
       (let [rolled-value (inc (rand-int 6))]
-        (notify-clients! channel {:message (str (:player message) " rolled a " rolled-value)})
         (swap! game #(pigs/roll % rolled-value))
+        (notify-clients! channel {:message (str (:player message) " rolled a " rolled-value)})
         (notify-clients! channel {:message (str (:player message) "'s current rolls are " (:current-player-rolls @game))})
+        (notify-clients! channel {:scores (map vector @player-names (:scores @game))})
         (notify-clients! channel :hold)
-        (notify-client! (:player-turn @game) :your-turn)
-        (notify-clients! channel {:scores (map vector @player-names (:scores @game))}))
+        (notify-client! (:player-turn @game) :your-turn))
+
 
       :hold
       (do
         (notify-clients! channel {:message (str (:player message) " held " (apply + (:current-player-rolls @game)) " points")})
         (notify-clients! channel :hold)
         (swap! game pigs/hold)
-        (notify-client! (:player-turn @game) :your-turn)
-        (notify-clients! channel {:scores (map vector @player-names (:scores @game))}))
+        (notify-clients! channel {:scores (map vector @player-names (:scores @game))})
+        (if (pigs/end-game? @game)
+          (notify-clients! channel {:message (str (:player message) " wins this game!")})
+          (notify-client! (:player-turn @game) :your-turn)))
 
       ;default
       (log/error "received unknown message" message))))
