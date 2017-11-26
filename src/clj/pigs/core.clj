@@ -8,6 +8,9 @@
 (defn add-player [game]
   (update game :scores conj 0))
 
+(defn player-turn [game]
+  (:player-turn game))
+
 (defn- add-rolls-to-current-player-score [game-state]
   (let [current-player-score-idx (dec (:player-turn game-state))
         rolls-total (apply + (:current-player-rolls game-state))]

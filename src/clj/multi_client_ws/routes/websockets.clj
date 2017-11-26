@@ -53,7 +53,7 @@
         (swap! player-names #(conj % (:player message)))
         (notify-clients! {:message (str (:player message) " joined the game")})
         (notify-clients! :hold)
-        (notify-client! (:player-turn @game) :your-turn)
+        (notify-client! (pigs/player-turn @game) :your-turn)
         (notify-clients! {:scores (map vector @player-names (:scores @game))}))
 
       :roll
@@ -63,7 +63,7 @@
         (notify-clients! {:message (str (:player message) "'s current rolls are " (:current-player-rolls @game))})
         (notify-clients! {:scores (map vector @player-names (:scores @game))})
         (notify-clients! :hold)
-        (notify-client! (:player-turn @game) :your-turn))
+        (notify-client! (pigs/player-turn @game) :your-turn))
 
 
       :hold
@@ -74,7 +74,7 @@
         (notify-clients! {:scores (map vector @player-names (:scores @game))})
         (if (pigs/end-game? @game)
           (notify-clients! {:message (str (:player message) " wins this game!")})
-          (notify-client! (:player-turn @game) :your-turn)))
+          (notify-client! (pigs/player-turn @game) :your-turn)))
 
       ;default
       (log/error "received unknown message" message))))
