@@ -49,19 +49,19 @@
       :join
       (do
         (swap! game pigs/add-player)
-        (swap! players->channels #(assoc % (count (:scores @game)) channel))
+        (swap! players->channels #(assoc % (count (pigs/scores @game)) channel))
         (swap! player-names #(conj % (:player message)))
         (notify-clients! {:message (str (:player message) " joined the game")})
         (notify-clients! :hold)
         (notify-client! (pigs/player-turn @game) :your-turn)
-        (notify-clients! {:scores (map vector @player-names (:scores @game))}))
+        (notify-clients! {:scores (map vector @player-names (pigs/scores @game))}))
 
       :roll
       (let [rolled-value (inc (rand-int 6))]
         (swap! game #(pigs/roll % rolled-value))
         (notify-clients! {:message (str (:player message) " rolled a " rolled-value)})
         (notify-clients! {:message (str (:player message) "'s current rolls are " (:current-player-rolls @game))})
-        (notify-clients! {:scores (map vector @player-names (:scores @game))})
+        (notify-clients! {:scores (map vector @player-names (pigs/scores @game))})
         (notify-clients! :hold)
         (notify-client! (pigs/player-turn @game) :your-turn))
 
@@ -71,7 +71,7 @@
         (notify-clients! {:message (str (:player message) " held " (apply + (:current-player-rolls @game)) " points")})
         (notify-clients! :hold)
         (swap! game pigs/hold)
-        (notify-clients! {:scores (map vector @player-names (:scores @game))})
+        (notify-clients! {:scores (map vector @player-names (pigs/scores @game))})
         (if (pigs/end-game? @game)
           (notify-clients! {:message (str (:player message) " wins this game!")})
           (notify-client! (pigs/player-turn @game) :your-turn)))
