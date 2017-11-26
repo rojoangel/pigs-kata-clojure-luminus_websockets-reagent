@@ -52,8 +52,12 @@
 (defn notify-scores! [game player-names]
   (notify-clients! {:scores (map vector player-names (pigs/scores game))}))
 
+(defn notify-player-joined! [player]
+  (notify-clients! {:message (str player " joined the game")}))
+
 (defn dispatch-message! [channel msg]
-  (let [message (:message (decode msg))]
+  (let [message (:message (decode msg))
+        player (:player message)]
     (case (:type message)
       :join
       (do
@@ -61,7 +65,7 @@
         (swap! game pigs/add-player)
         (swap! players->channels #(assoc % (pigs/count-players @game) channel))
         (swap! player-names #(conj % (:player message)))
-        (notify-clients! {:message (str (:player message) " joined the game")})
+        (notify-player-joined! player)
         (notify-scores! @game @player-names)
         (notify-client-turn! @game))
 
