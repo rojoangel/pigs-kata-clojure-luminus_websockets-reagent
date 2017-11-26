@@ -62,6 +62,9 @@
 (defn notify-player-held! [game player]
   (notify-clients! {:message (str player " held " (pigs/current-player-rolls-total game) " points")}))
 
+(defn notify-player-wins! [player]
+  (notify-clients! {:message (str player " wins this game!")}))
+
 (defn dispatch-message! [channel msg]
   (let [message (:message (decode msg))
         player (:player message)]
@@ -91,7 +94,7 @@
         (swap! game pigs/hold)
         (notify-scores! @game @player-names)
         (if (pigs/end-game? @game)
-          (notify-clients! {:message (str (:player message) " wins this game!")})
+          (notify-player-wins! player)
           (notify-client-turn! @game)))
 
       ;default
