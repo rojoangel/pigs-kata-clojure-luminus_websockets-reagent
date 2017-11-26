@@ -60,7 +60,7 @@
       (let [rolled-value (inc (rand-int 6))]
         (swap! game #(pigs/roll % rolled-value))
         (notify-clients! {:message (str (:player message) " rolled a " rolled-value)})
-        (notify-clients! {:message (str (:player message) "'s current rolls are " (:current-player-rolls @game))})
+        (notify-clients! {:message (str (:player message) "'s current rolls are " (pigs/current-player-rolls @game))})
         (notify-clients! {:scores (map vector @player-names (pigs/scores @game))})
         (notify-clients! :hold)
         (notify-client! (pigs/player-turn @game) :your-turn))
@@ -68,7 +68,7 @@
 
       :hold
       (do
-        (notify-clients! {:message (str (:player message) " held " (apply + (:current-player-rolls @game)) " points")})
+        (notify-clients! {:message (str (:player message) " held " (apply + (pigs/current-player-rolls @game)) " points")})
         (notify-clients! :hold)
         (swap! game pigs/hold)
         (notify-clients! {:scores (map vector @player-names (pigs/scores @game))})

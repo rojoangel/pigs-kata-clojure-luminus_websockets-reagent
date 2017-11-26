@@ -17,6 +17,9 @@
 (defn count-players [game]
   (count (scores game)))
 
+(defn current-player-rolls [game]
+  (:current-player-rolls game))
+
 (defn- add-rolls-to-current-player-score [game-state]
   (let [current-player-score-idx (dec (:player-turn game-state))
         rolls-total (apply + (:current-player-rolls game-state))]
