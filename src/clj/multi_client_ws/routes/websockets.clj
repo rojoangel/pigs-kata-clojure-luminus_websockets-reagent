@@ -46,6 +46,9 @@
 (defn freeze-clients! []
   (notify-clients! :freeze))
 
+(defn notify-client-turn! [game]
+  (notify-client! (pigs/player-turn game) :your-turn))
+
 (defn dispatch-message! [channel msg]
   (let [message (:message (decode msg))]
     (case (:type message)
@@ -56,8 +59,8 @@
         (swap! players->channels #(assoc % (pigs/count-players @game) channel))
         (swap! player-names #(conj % (:player message)))
         (notify-clients! {:message (str (:player message) " joined the game")})
-        (notify-client! (pigs/player-turn @game) :your-turn)
-        (notify-clients! {:scores (map vector @player-names (pigs/scores @game))}))
+        (notify-clients! {:scores (map vector @player-names (pigs/scores @game))})
+        (notify-client-turn! @game))
 
       :roll
       (let [rolled-value (inc (rand-int 6))]
@@ -66,8 +69,7 @@
         (notify-clients! {:message (str (:player message) " rolled a " rolled-value)})
         (notify-clients! {:message (str (:player message) "'s current turn total is " (pigs/current-player-rolls-total @game) " points")})
         (notify-clients! {:scores (map vector @player-names (pigs/scores @game))})
-        (notify-client! (pigs/player-turn @game) :your-turn))
-
+        (notify-client-turn! @game))
 
       :hold
       (do
@@ -77,7 +79,7 @@
         (notify-clients! {:scores (map vector @player-names (pigs/scores @game))})
         (if (pigs/end-game? @game)
           (notify-clients! {:message (str (:player message) " wins this game!")})
-          (notify-client! (pigs/player-turn @game) :your-turn)))
+          (notify-client-turn! @game)))
 
       ;default
       (log/error "received unknown message" message))))
