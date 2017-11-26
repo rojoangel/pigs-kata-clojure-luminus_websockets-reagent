@@ -55,6 +55,13 @@
 (defn notify-player-joined! [player]
   (notify-clients! {:message (str player " joined the game")}))
 
+(defn notify-player-rolled! [game player rolled-value]
+  (notify-clients! {:message (str player " rolled a " rolled-value)})
+  (notify-clients! {:message (str player "'s current turn total is " (pigs/current-player-rolls-total game) " points")}))
+
+(defn notify-player-held! [game player]
+  (notify-clients! {:message (str player " held " (pigs/current-player-rolls-total game) " points")}))
+
 (defn dispatch-message! [channel msg]
   (let [message (:message (decode msg))
         player (:player message)]
@@ -73,15 +80,14 @@
       (let [rolled-value (inc (rand-int 6))]
         (freeze-clients!)
         (swap! game #(pigs/roll % rolled-value))
-        (notify-clients! {:message (str (:player message) " rolled a " rolled-value)})
-        (notify-clients! {:message (str (:player message) "'s current turn total is " (pigs/current-player-rolls-total @game) " points")})
+        (notify-player-rolled! @game player rolled-value)
         (notify-scores! @game @player-names)
         (notify-client-turn! @game))
 
       :hold
       (do
         (freeze-clients!)
-        (notify-clients! {:message (str (:player message) " held " (pigs/current-player-rolls-total @game) " points")})
+        (notify-player-held! @game player)
         (swap! game pigs/hold)
         (notify-scores! @game @player-names)
         (if (pigs/end-game? @game)
