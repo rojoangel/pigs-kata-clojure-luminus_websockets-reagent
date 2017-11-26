@@ -65,6 +65,17 @@
 (defn notify-player-wins! [player]
   (notify-clients! {:message (str player " wins this game!")}))
 
+(defn join! [game player channel]
+  (swap! game pigs/add-player)
+  (swap! players->channels #(assoc % (pigs/count-players @game) channel))
+  (swap! player-names #(conj % player)))
+
+(defn add-roll! [game rolled-value]
+  (swap! game #(pigs/roll % rolled-value)))
+
+(defn hold! [game]
+  (swap! game pigs/hold))
+
 (defn dispatch-message! [channel msg]
   (let [message (:message (decode msg))
         player (:player message)]
@@ -72,9 +83,7 @@
       :join
       (do
         (freeze-clients!)
-        (swap! game pigs/add-player)
-        (swap! players->channels #(assoc % (pigs/count-players @game) channel))
-        (swap! player-names #(conj % (:player message)))
+        (join! game player channel)
         (notify-player-joined! player)
         (notify-scores! @game @player-names)
         (notify-client-turn! @game))
@@ -82,7 +91,7 @@
       :roll
       (let [rolled-value (inc (rand-int 6))]
         (freeze-clients!)
-        (swap! game #(pigs/roll % rolled-value))
+        (add-roll! game rolled-value)
         (notify-player-rolled! @game player rolled-value)
         (notify-scores! @game @player-names)
         (notify-client-turn! @game))
@@ -91,7 +100,7 @@
       (do
         (freeze-clients!)
         (notify-player-held! @game player)
-        (swap! game pigs/hold)
+        (hold! game)
         (notify-scores! @game @player-names)
         (if (pigs/end-game? @game)
           (notify-player-wins! player)

@@ -20,6 +20,9 @@
 (defn current-player-rolls [game]
   (:current-player-rolls game))
 
+(defn current-player-last-roll [game]
+  (first (current-player-rolls game)))
+
 (defn current-player-rolls-total [game]
   (apply + (current-player-rolls game)))
 
